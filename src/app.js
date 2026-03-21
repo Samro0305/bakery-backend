@@ -5,12 +5,17 @@ const prisma = require("./config/prisma");
 const swaggerUi = require("swagger-ui-express");
 const swaggerJsDoc = require("swagger-jsdoc");
 
+// ROUTES (IMPORT FIRST — NO EXCEPTIONS)
+const productRoutes = require("./routes/productRoutes");
+const carouselRoutes = require("./routes/carouselRoutes");
+
 const app = express();
 
-/*MIDDLEWARE (ORDER MATTERS)*/
+/*MIDDLEWARE */
 app.use(cors());
-app.use(express.json()); // MUST BE BEFORE ROUTES
+app.use(express.json());
 
+/* SWAGGER*/
 const swaggerOptions = {
   definition: {
     openapi: "3.0.0",
@@ -21,43 +26,41 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: "http://localhost:5000",
+        url: "http://localhost:5000", // fixed (was https)
       },
     ],
   },
-  apis: ["./src/routes/*.js"], // where docs will be written
+  apis: ["./routes/*.js"], // fixed path
 };
 
 const swaggerSpec = swaggerJsDoc(swaggerOptions);
 
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-/*ROUTES*/
-const productRoutes = require("./routes/productRoutes");
-const carouselRoutes = require("./routes/carouselRoutes");
-
+/*ROUTES */
 app.use("/api/products", productRoutes);
 app.use("/api/carousel", carouselRoutes);
 
-/*DB CONNECTION*/
+/*  DB CONNECTION */
 async function connectDB() {
   try {
     await prisma.$connect();
     console.log("Database connected ✅");
   } catch (error) {
     console.error("Database connection failed ❌", error);
+    process.exit(1); // stop server if DB fails
   }
 }
 
 connectDB();
 
-/*TEST ROUTE*/
+/* TEST ROUTE  */
 app.get("/", (req, res) => {
   res.send("Bakery API is running 🚀");
 });
 
-/*SERVER START*/
-const PORT = 5000;
+/* SERVER */
+const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

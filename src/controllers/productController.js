@@ -24,27 +24,25 @@ exports.createProduct = async (req, res) => {
 
 exports.getProducts = async (req, res) => {
   try {
-    const { q = "", page = 1 } = req.query;
-
-    const pageSize = 10;
-    const skip = (page - 1) * pageSize;
+    const { q = "" } = req.query;
 
     const products = await prisma.product.findMany({
-  where: {
-    name: {
-      contains: q,
-    },
-  },
-  skip: skip,
-  take: pageSize,
-});
+      where: q
+        ? {
+            name: {
+              contains: q,
+            },
+          }
+        : {},
+    });
 
     res.json(products);
   } catch (error) {
-    console.error(error);
+    console.error("GET PRODUCTS ERROR:", error);
     res.status(500).json({ error: "Failed to fetch products" });
   }
 };
+
 
 exports.getProductById = async (req, res) => {
   try {
