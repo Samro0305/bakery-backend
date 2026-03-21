@@ -24,19 +24,7 @@ exports.createProduct = async (req, res) => {
 
 exports.getProducts = async (req, res) => {
   try {
-    const { q = "" } = req.query;
-
-    const products = await prisma.product.findMany({
-      where: q
-        ? {
-            name: {
-              contains: q,
-              mode: "insensitive", // important
-            },
-          }
-        : {},
-    });
-
+    const products = await prisma.product.findMany();
     res.json(products);
   } catch (error) {
     console.error("GET PRODUCTS ERROR:", error);
