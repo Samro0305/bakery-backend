@@ -5,62 +5,64 @@ const prisma = require("./config/prisma");
 const swaggerUi = require("swagger-ui-express");
 const swaggerJsDoc = require("swagger-jsdoc");
 
-// ROUTES (IMPORT FIRST — NO EXCEPTIONS)
+// ROUTES
 const productRoutes = require("./routes/productRoutes");
 const carouselRoutes = require("./routes/carouselRoutes");
+const authRoutes = require("./routes/authRoutes"); // ✅ ADD THIS
 
 const app = express();
 
-/*MIDDLEWARE */
+/* MIDDLEWARE */
 app.use(cors());
 app.use(express.json());
 
-/* SWAGGER*/
+/* SWAGGER */
 const swaggerOptions = {
-  definition: {
-    openapi: "3.0.0",
-    info: {
-      title: "Bakery API",
-      version: "1.0.0",
-      description: "E-commerce Product API",
-    },
-    servers: [
-      {
-        url: "http://localhost:5000", // fixed (was https)
-      },
-    ],
-  },
-  apis: ["./routes/*.js"], // fixed path
+definition: {
+openapi: "3.0.0",
+info: {
+title: "Bakery API",
+version: "1.0.0",
+description: "E-commerce Product API",
+},
+servers: [
+{
+url: "http://localhost:5000",
+},
+],
+},
+apis: ["./routes/*.js"],
 };
 
 const swaggerSpec = swaggerJsDoc(swaggerOptions);
 
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-/*ROUTES */
+/* ROUTES */
 app.use("/api/products", productRoutes);
 app.use("/api/carousel", carouselRoutes);
+app.use("/api/auth", authRoutes); // ✅ ADD THIS
 
-/*  DB CONNECTION */
+/* DB CONNECTION */
 async function connectDB() {
-  try {
-    await prisma.$connect();
-    console.log("Database connected ✅");
-  } catch (error) {
-    console.error("Database connection failed ❌", error);
-  }
+try {
+await prisma.$connect();
+console.log("Database connected ✅");
+} catch (error) {
+console.error("Database connection failed ❌", error);
+}
 }
 
 connectDB();
 
-/* TEST ROUTE  */
+/* TEST ROUTE */
 app.get("/", (req, res) => {
-  res.send("Bakery API is running 🚀");
+res.send("Bakery API is running 🚀");
 });
 
 /* SERVER */
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+console.log(`Server running on http://localhost:${PORT}`);
 });
