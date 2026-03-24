@@ -1,6 +1,7 @@
 import prisma from "../config/prisma.js";
 
-exports.createProduct = async (req, res) => {
+// CREATE PRODUCT
+export const createProduct = async (req, res) => {
   try {
     const { name, description, price, image_url, sku, availability } = req.body;
 
@@ -22,7 +23,8 @@ exports.createProduct = async (req, res) => {
   }
 };
 
-exports.getProducts = async (req, res) => {
+// GET ALL PRODUCTS
+export const getProducts = async (req, res) => {
   try {
     const { q = "" } = req.query;
 
@@ -39,23 +41,19 @@ exports.getProducts = async (req, res) => {
 
     res.json(products);
   } catch (error) {
-    console.error("GET PRODUCTS ERROR:", error);
+    console.error(error);
     res.status(500).json({ error: "Failed to fetch products" });
   }
 };
 
-
-exports.getProductById = async (req, res) => {
+// GET PRODUCT BY ID
+export const getProductById = async (req, res) => {
   try {
     const { id } = req.params;
 
     const product = await prisma.product.findUnique({
       where: { id },
     });
-
-    if (!product) {
-      return res.status(404).json({ error: "Product not found" });
-    }
 
     res.json(product);
   } catch (error) {
@@ -64,7 +62,8 @@ exports.getProductById = async (req, res) => {
   }
 };
 
-exports.updateProduct = async (req, res) => {
+// UPDATE PRODUCT
+export const updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
 

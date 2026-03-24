@@ -1,94 +1,86 @@
 import prisma from "../config/prisma.js";
 
-// CREATE PRODUCT
-export const createProduct = async (req, res) => {
-  try {
-    const { name, description, price, image_url, sku, availability } = req.body;
+// REGISTER
+export const register = async (req, res) => {
+  const { name, email, password } = req.body;
 
-    const product = await prisma.product.create({
-      data: {
-        name,
-        description,
-        price,
-        image_url,
-        sku,
-        availability,
-      },
-    });
-
-    res.status(201).json(product);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Something went wrong" });
+  if (!name || !email || !password) {
+    return res.status(400).json({ message: "All fields required" });
   }
-};
 
-// GET ALL PRODUCTS
-export const getProducts = async (req, res) => {
   try {
-    const { q = "" } = req.query;
-
-    const products = await prisma.product.findMany({
-      where: q
-        ? {
-            name: {
-              contains: q,
-              mode: "insensitive",
-            },
-          }
-        : {},
+    const existing = await prisma.user.findUnique({
+      where: { email }
     });
 
-    res.json(products);
-  } catch (error) {
-    console.error("GET PRODUCTS ERROR:", error);
-    res.status(500).json({ error: "Failed to fetch products" });
-  }
-};
-
-// GET SINGLE PRODUCT
-export const getProductById = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const product = await prisma.product.findUnique({
-      where: { id },
-    });
-
-    if (!product) {
-      return res.status(404).json({ error: "Product not found" });
+    if (existing) {
+      return res.status(400).json({ message: "Email already exists" });
     }
 
-    res.json(product);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Failed to fetch product" });
+    const user = await prisma.user.create({
+      data: { name, email, password }
+    });
+
+    res.json({ message: "User created", user });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
-// UPDATE PRODUCT
-export const updateProduct = async (req, res) => {
+// LOGIN
+export const login = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { email }
+    });
+
+    if (!user || user.password !== password) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    res.json({
+      message: "Login successful",
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email
+      }
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// GET USERS
+export const getUsers = async (req, res) => {
+  try {
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true
+      }
+    });
+
+    res.json(users);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// DELETE USER
+export const deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const updatedProduct = await prisma.product.update({
-      where: { id },
-      data: req.body,
-    });
-
-    res.json(updatedProduct);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Failed to update product" });
-  }
-};
-
-// DELETE PRODUCT
-// DELETE USER
-export const deleteUser = async (req, res) => {
-  const { id } = req.params;
-
-  try {
     await prisma.user.delete({
       where: { id }
     });
