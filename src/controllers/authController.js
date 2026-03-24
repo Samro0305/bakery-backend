@@ -84,17 +84,18 @@ export const updateProduct = async (req, res) => {
 };
 
 // DELETE PRODUCT
-export const deleteProduct = async (req, res) => {
-  try {
-    const { id } = req.params;
+export const deleteUser = async (req, res) => {
+  const { id } = req.params;
 
-    await prisma.product.delete({
-      where: { id },
+  try {
+    await prisma.user.delete({
+      where: { id }
     });
 
-    res.json({ message: "Product deleted successfully" });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Failed to delete product" });
+    res.json({ message: "User deleted" });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Delete failed" });
   }
 };
