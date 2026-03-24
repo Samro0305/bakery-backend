@@ -11,4 +11,4 @@ router.get("/", getCarousel);
 router.post("/", createCarousel);
 router.delete("/:id", deleteCarousel);
 
-module.exports = router;
+export default router;
