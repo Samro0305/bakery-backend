@@ -1,4 +1,5 @@
 import prisma from "../config/prisma.js";
+import router from "../routes/productRoutes.js";
 
 // REGISTER
 export const register = async (req, res) => {
@@ -95,3 +96,5 @@ export const deleteUser = async (req, res) => {
     res.status(500).json({ message: "Delete failed" });
   }
 };
+
+export default router;
