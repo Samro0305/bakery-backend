@@ -1,11 +1,11 @@
-const express = require("express");
-const router = express.Router();
-
-const {
+import express from "express";
+import {
   getCarousel,
   createCarousel,
   deleteCarousel
-} = require("../controllers/carouselController");
+} from "../controllers/carouselController.js";
+
+const router = express.Router();
 
 router.get("/", getCarousel);
 router.post("/", createCarousel);

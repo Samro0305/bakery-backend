@@ -1,15 +1,22 @@
-const prisma = require("../config/prisma");
+import prisma from "../config/prisma.js";
 
-exports.getCarousel = async (req, res) => {
-  const items = await prisma.carousel.findMany({
-  orderBy: { createdAt: "desc" }  });
-  res.json(items);
+// GET ALL
+export const getCarousel = async (req, res) => {
+  try {
+    const items = await prisma.carousel.findMany({
+      orderBy: { createdAt: "desc" }
+    });
+
+    res.json(items);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch carousel" });
+  }
 };
 
-exports.createCarousel = async (req, res) => {
+// CREATE
+export const createCarousel = async (req, res) => {
   try {
-    console.log("BODY:", req.body); // DEBUG
-
     const { title, image_url } = req.body;
 
     if (!title || !image_url) {
@@ -27,16 +34,23 @@ exports.createCarousel = async (req, res) => {
 
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Failed" });
+    res.status(500).json({ error: "Failed to create" });
   }
 };
 
-exports.deleteCarousel = async (req, res) => {
-  const { id } = req.params;
+// DELETE
+export const deleteCarousel = async (req, res) => {
+  try {
+    const { id } = req.params;
 
-  await prisma.carousel.delete({
-    where: { id }
-  });
+    await prisma.carousel.delete({
+      where: { id }
+    });
 
-  res.json({ message: "Deleted" });
+    res.json({ message: "Deleted" });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Delete failed" });
+  }
 };

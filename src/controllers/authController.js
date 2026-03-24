@@ -1,98 +1,100 @@
 import prisma from "../config/prisma.js";
 
-// REGISTER
-export const register = async (req, res) => {
-  const { name, email, password } = req.body;
-
-  if (!name || !email || !password) {
-    return res.status(400).json({ message: "All fields required" });
-  }
-
+// CREATE PRODUCT
+export const createProduct = async (req, res) => {
   try {
-    const existing = await prisma.user.findUnique({
-      where: { email }
+    const { name, description, price, image_url, sku, availability } = req.body;
+
+    const product = await prisma.product.create({
+      data: {
+        name,
+        description,
+        price,
+        image_url,
+        sku,
+        availability,
+      },
     });
 
-    if (existing) {
-      return res.status(400).json({ message: "Email already exists" });
+    res.status(201).json(product);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Something went wrong" });
+  }
+};
+
+// GET ALL PRODUCTS
+export const getProducts = async (req, res) => {
+  try {
+    const { q = "" } = req.query;
+
+    const products = await prisma.product.findMany({
+      where: q
+        ? {
+            name: {
+              contains: q,
+              mode: "insensitive",
+            },
+          }
+        : {},
+    });
+
+    res.json(products);
+  } catch (error) {
+    console.error("GET PRODUCTS ERROR:", error);
+    res.status(500).json({ error: "Failed to fetch products" });
+  }
+};
+
+// GET SINGLE PRODUCT
+export const getProductById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const product = await prisma.product.findUnique({
+      where: { id },
+    });
+
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
     }
 
-    const user = await prisma.user.create({
-      data: { name, email, password }
-    });
-
-    res.json({ message: "User created", user });
-
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
+    res.json(product);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to fetch product" });
   }
 };
 
-// LOGIN
-export const login = async (req, res) => {
-  const { email, password } = req.body;
-
-  if (!email || !password) {
-    return res.status(400).json({ message: "All fields required" });
-  }
-
+// UPDATE PRODUCT
+export const updateProduct = async (req, res) => {
   try {
-    const user = await prisma.user.findUnique({
-      where: { email }
+    const { id } = req.params;
+
+    const updatedProduct = await prisma.product.update({
+      where: { id },
+      data: req.body,
     });
 
-    if (!user || user.password !== password) {
-      return res.status(400).json({ message: "Invalid credentials" });
-    }
-
-    res.json({
-      message: "Login successful",
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email
-      }
-    });
-
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
+    res.json(updatedProduct);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to update product" });
   }
 };
 
-// GET USERS (ADMIN)
-export const getUsers = async (req, res) => {
+// DELETE PRODUCT
+export const deleteProduct = async (req, res) => {
   try {
-    const users = await prisma.user.findMany({
-      select: {
-        id: true,
-        name: true,
-        email: true
-      }
+    const { id } = req.params;
+
+    await prisma.product.delete({
+      where: { id },
     });
 
-    res.json(users);
-
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
+    res.json({ message: "Product deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to delete product" });
   }
 };
-
-export const deleteUser = async (req, res) => {
-  const { id } = req.params;
-
-  try {
-    await prisma.user.delete({
-      where: { id }
-    });
-
-    res.json({ message: "User deleted" });
-
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Delete failed" });
-  }
-};
-
