@@ -80,7 +80,8 @@ exports.updateProduct = async (req, res) => {
   }
 };
 
-exports.deleteProduct = async (req, res) => {
+// DELETE PRODUCT
+export const deleteProduct = async (req, res) => {
   try {
     const { id } = req.params;
 

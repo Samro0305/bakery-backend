@@ -84,6 +84,7 @@ export const updateProduct = async (req, res) => {
 };
 
 // DELETE PRODUCT
+// DELETE USER
 export const deleteUser = async (req, res) => {
   const { id } = req.params;
 
