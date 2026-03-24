@@ -2,19 +2,23 @@ import prisma from "../config/prisma.js";
 
 // REGISTER
 export const register = async (req, res) => {
-  const { username, password } = req.body;
+  const { name, email, password } = req.body;
+
+  if (!name || !email || !password) {
+    return res.status(400).json({ message: "All fields required" });
+  }
 
   try {
     const existing = await prisma.user.findUnique({
-      where: { username }
+      where: { email }
     });
 
     if (existing) {
-      return res.status(400).json({ message: "User already exists" });
+      return res.status(400).json({ message: "Email already exists" });
     }
 
     const user = await prisma.user.create({
-      data: { username, password }
+      data: { name, email, password }
     });
 
     res.json({ message: "User created", user });
@@ -27,18 +31,29 @@ export const register = async (req, res) => {
 
 // LOGIN
 export const login = async (req, res) => {
-  const { username, password } = req.body;
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ message: "All fields required" });
+  }
 
   try {
     const user = await prisma.user.findUnique({
-      where: { username }
+      where: { email }
     });
 
     if (!user || user.password !== password) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    res.json({ username: user.username });
+    res.json({
+      message: "Login successful",
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email
+      }
+    });
 
   } catch (err) {
     console.error(err);
@@ -50,7 +65,11 @@ export const login = async (req, res) => {
 export const getUsers = async (req, res) => {
   try {
     const users = await prisma.user.findMany({
-      select: { id: true, username: true }
+      select: {
+        id: true,
+        name: true,
+        email: true
+      }
     });
 
     res.json(users);
