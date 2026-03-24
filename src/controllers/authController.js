@@ -79,3 +79,19 @@ export const getUsers = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+export const deleteUser = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    await prisma.user.delete({
+      where: { id }
+    });
+
+    res.json({ message: "User deleted" });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Delete failed" });
+  }
+};
